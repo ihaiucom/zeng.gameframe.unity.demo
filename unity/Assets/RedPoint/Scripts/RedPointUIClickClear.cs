@@ -20,6 +20,6 @@ public class RedPointUIClickClear : MonoBehaviour
         if (btn == null) return;
         if (redPointUIBinder == null) return;
 
-        btn.onClick.AddListener(() => { RedPointManager.Set(redPointUIBinder.key, false); });
+        btn.onClick.AddListener(() => { RedPointManager.SetCount(redPointUIBinder.key, 0); });
     }
 }

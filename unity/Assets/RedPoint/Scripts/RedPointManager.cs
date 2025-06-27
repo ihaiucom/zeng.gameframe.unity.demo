@@ -4,52 +4,88 @@ using System.Collections.Generic;
 public class RedPointManager
 {
     private static Dictionary<string, RedPointNode> _nodeDict = new();
-
+    private static Dictionary<string, List<Action<int>>> bindings = new(); 
     public static void Init(RedPointTreeConfig config)
     {
         _nodeDict.Clear();
+        bindings.Clear();
         foreach (var root in config.rootNodes)
         {
-            BuildNodeRecursive(null, root);
+            var node = BuildNodeRecursive(root, null);
+            _nodeDict[node.Key] = node;
         }
     }
-
-    private static void BuildNodeRecursive(RedPointNode parent, RedPointNodeData data)
+    private static RedPointNode BuildNodeRecursive(RedPointNodeData data, RedPointNode parent)
     {
-        var node = new RedPointNode(data.key);
-        node.Parent = parent;
-        _nodeDict[data.key] = node;
-        parent?.AddChild(node);
-
-        if (data.children != null)
+        var node = new RedPointNode(data.key,parent);
+        foreach (var childData in data.children)
         {
-            foreach (var child in data.children)
-                BuildNodeRecursive(node, child);
+            var childNode = BuildNodeRecursive(childData, node);
+            node.children.Add(childNode);
+            _nodeDict[childNode.Key] = childNode;
         }
+        return node;
     }
-
-    public static void Set(string key, bool active)
+    
+    public static void SetCount(string key, int count)
     {
         if (_nodeDict.TryGetValue(key, out var node))
         {
-            node.SetActive(active);
+            node.SetCount(count);
         }
+    }
+    
+    public static void SubCount(string key, int val)
+    {
+        int num = GetCount(key);
+        SetCount(key, num - val);
+    }
+
+    public static int GetCount(string key)
+    {
+        if (_nodeDict.TryGetValue(key, out var node))
+        {
+            return node.GetCount();
+        }
+        return 0;
     }
 
     public static bool IsActive(string key)
     {
-        return _nodeDict.TryGetValue(key, out var node) && node.IsActive;
+        return GetCount(key) > 0;
+    }
+    
+    public static void Register(string key, Action<int> onChange)
+    {
+        if (!bindings.TryGetValue(key, out var list))
+        {
+            list = new List<Action<int>>();
+            bindings[key] = list;
+        }
+        if (!list.Contains(onChange))
+            list.Add(onChange);
+        
+        
+        if (_nodeDict.TryGetValue(key, out var node))
+            onChange?.Invoke(node.GetCount());
     }
 
-    public static void Register(string key, Action<bool> onChange)
+    public static void Unregister(string key, Action<int> onChange)
     {
-        if (_nodeDict.TryGetValue(key, out var node))
-            node.OnStateChanged += onChange;
+        if (bindings.TryGetValue(key, out var list))
+        {
+            list.Remove(onChange);
+        }
     }
-
-    public static void Unregister(string key, Action<bool> onChange)
+    
+    public static void NotifyStateChanged(RedPointNode node)
     {
-        if (_nodeDict.TryGetValue(key, out var node))
-            node.OnStateChanged -= onChange;
+        if (bindings.TryGetValue(node.Key, out var list))
+        {
+            foreach (var cb in list)
+            {
+                cb?.Invoke(node.GetCount());
+            }
+        }
     }
 }

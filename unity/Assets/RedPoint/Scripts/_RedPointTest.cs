@@ -20,20 +20,20 @@ public class _RedPointTest : MonoBehaviour
         btnSendNew.onClick.AddListener(() =>
         {
             Debug.Log("Mail.New");
-            RedPointManager.Set("Mail.New", true);
+            RedPointManager.SetCount("Mail.New", RedPointManager.GetCount("Mail.New") + 1);
         });
         
         btnSendSystem.onClick.AddListener(() =>
         {
             Debug.Log("Mail.System");
-            RedPointManager.Set("Mail.System", true);
+            RedPointManager.SetCount("Mail.System", RedPointManager.GetCount("Mail.New") + 1);
         });
         
         btnClear.onClick.AddListener(() =>
         {
             Debug.Log("Clear");
-            RedPointManager.Set("Mail.New", false);
-            RedPointManager.Set("Mail.System", false);
+            RedPointManager.SetCount("Mail.New", 0);
+            RedPointManager.SetCount("Mail.System", 0);
         });
         
         gameObject.SetActive(false);

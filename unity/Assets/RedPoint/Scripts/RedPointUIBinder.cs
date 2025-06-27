@@ -1,15 +1,18 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 [RequireComponent(typeof(GameObject))]
 public class RedPointUIBinder : MonoBehaviour
 {
     public string key;
     public GameObject redDotObject;
+    public TextMeshProUGUI numText;
 
     private void OnEnable()
     {
+        if (numText == null) numText = redDotObject.GetComponentInChildren<TextMeshProUGUI>();
         RedPointManager.Register(key, UpdateState);
-        redDotObject.SetActive(RedPointManager.IsActive(key));
+        UpdateState(RedPointManager.GetCount(key));
     }
 
     private void OnDisable()
@@ -17,8 +20,12 @@ public class RedPointUIBinder : MonoBehaviour
         RedPointManager.Unregister(key, UpdateState);
     }
 
-    private void UpdateState(bool isActive)
+    private void UpdateState(int num)
     {
-        redDotObject.SetActive(isActive);
+        redDotObject.SetActive(num > 0);
+        if (numText != null)
+        {
+            numText.text = num.ToString();
+        }
     }
 }

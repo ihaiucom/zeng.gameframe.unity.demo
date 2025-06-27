@@ -5,34 +5,42 @@ using System.Linq;
 public class RedPointNode
 {
     public string Key { get; }
-    public bool IsActive { get; private set; }
     public RedPointNode Parent { get; set; }
-    private readonly List<RedPointNode> _children = new();
+    public List<RedPointNode> children = new();
+    
+    private int rawCount = 0;
+    public int TotalCount { get; private set; } = 0;
 
-    public event Action<bool> OnStateChanged;
-
-    public RedPointNode(string key)
+    public RedPointNode(string key,RedPointNode parent)
     {
         Key = key;
+        Parent = parent;
     }
 
-    public void AddChild(RedPointNode child) => _children.Add(child);
-
-    public void SetActive(bool active)
+    public void SetCount(int count)
     {
-        if (IsActive == active) return;
-        IsActive = active;
-        OnStateChanged?.Invoke(IsActive);
-        Parent?.RefreshFromChildren();
+        if (count < 0) count = 0;
+        rawCount = count;
+        UpdateTotalCount();
     }
 
-    public void RefreshFromChildren()
+    public int GetCount()
     {
-        bool anyChildActive = _children.Any(child => child.IsActive);
-        if (IsActive == anyChildActive) return;
+        return TotalCount;
+    }
 
-        IsActive = anyChildActive;
-        OnStateChanged?.Invoke(IsActive);
-        Parent?.RefreshFromChildren();
+    private void UpdateTotalCount()
+    {
+        int total = rawCount;
+        foreach (var child in children)
+        {
+            total += child.TotalCount;
+        }
+        if (TotalCount != total)
+        {
+            TotalCount = total;
+            Parent?.UpdateTotalCount();
+            RedPointManager.NotifyStateChanged(this);
+        }
     }
 }
