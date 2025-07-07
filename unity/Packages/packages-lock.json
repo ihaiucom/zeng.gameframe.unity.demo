@@ -184,6 +184,12 @@
       },
       "url": "https://packages.unity.com"
     },
+    "zeng.gameframe.ui": {
+      "version": "file:E:/zengfeng/githubs/zeng.gameframe.ugui/unity/Assets/gameframe/ui",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "zeng.odininspector": {
       "version": "file:Sirenix",
       "depth": 0,
